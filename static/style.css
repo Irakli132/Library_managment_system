@@ -1,0 +1,39 @@
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    padding-top: 20px;
+}
+
+.card {
+    margin-bottom: 20px;
+}
+
+.navbar {
+    background-color: #343a40;
+    color: white;
+}
+
+.navbar .nav-link {
+    color: white;
+}
+
+.alert {
+    margin-top: 20px;
+}
+
+.text-danger {
+    color: red;
+}
+
+.text-success {
+    color: green;
+}

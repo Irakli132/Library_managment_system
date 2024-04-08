@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+    <style>
+        .alert-danger {
+            color: red !important;
+        }
+        .alert-warning {
+            color: red !important;
+        }
+
+        .alert-success {
+            color: green !important;
+        }
+    </style>
+</head>
+
+<body class="hold-transition login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <a href="#"><b>Library</b>System</a>
+        </div>
+        <div class="card">
+            <div class="card-body login-card-body">
+                <p class="login-box-msg">Sign in to start your session</p>
+                <form method="POST" action="">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Username" name="username">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-user"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="password" class="form-control" placeholder="Password" name="password">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                        </div>
+                        {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div
+                                    class="alert alert-dismissible {% if 'success' in messages %}alert-success{% elif 'warning' in messages %}alert-warning{% elif 'danger' in messages %}alert-danger{% endif %}">
+                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                    <ul>
+                                        {% for message in messages %}
+                                        <li class="{{ message_class }}">{{ message }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var closeButton = document.querySelectorAll('.close');
+            closeButton.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    this.parentElement.parentElement.style.display = 'none';
+                });
+            });
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+</body>
+
+</html>
