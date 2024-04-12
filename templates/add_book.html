@@ -1,115 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Book</title>
-    <!-- AdminLTE CSS -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
-    <!-- Font Awesome Icons -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        /* Additional styles specific to this page */
+ 
         .form-group {
             margin-bottom: 20px;
         }
     </style>
 </head>
+
 <body class="hold-transition sidebar-mini">
-<div class="wrapper">
-    <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-        <!-- Left navbar links -->
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
-            </li>
-        </ul>
-    </nav>
-    <!-- /.navbar -->
+    <div class="wrapper">
+  
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+       
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+        </nav>
 
-    <!-- Main Sidebar Container -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <!-- Sidebar Menu -->
-            <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                    <li class="nav-item">
-                        <a href="{{ url_for('index') }}" class="nav-link">
-                            <i class="nav-icon fas fa-book"></i>
-                            <p>Books | {{ session['username'] }}</p>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </aside>
 
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
-        <!-- Main content -->
-        <section class="content">
-            <div class="container-fluid">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Add Book</h3>
-                    </div>
-                    <!-- /.card-header -->
-                    <div class="card-body">
-                        <form id="addBookForm" method="POST" action="{{ url_for('add_book') }}">
-                            <div class="form-group">
-                                <label for="title">Title:</label>
-                                <input type="text" class="form-control" id="title" name="title" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="author">Author:</label>
-                                <input type="text" class="form-control" id="author" name="author" required>
-                            </div>
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-primary">Add Book</button>
-                        </form>
-                    </div>
-                    <!-- /.card-body -->
-                </div>
+ 
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+  
+            <div class="sidebar">
+         
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                        data-accordion="false">
+                        <li class="nav-item">
+                            <a href="{{ url_for('index') }}" class="nav-link">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>Books | {{ session['username'] }}</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
-            <!-- /.container-fluid -->
-        </section>
-        <!-- /.content -->
+        </aside>
+
+  
+        <div class="content-wrapper">
+   
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Add Book</h3>
+                        </div>
+                  
+                        <div class="card-body">
+                            <form id="addBookForm" method="POST" enctype="multipart/form-data">
+                                <div class="form-group">
+                                    <label for="title">Title:</label>
+                                    <input type="text" class="form-control" id="title" name="title" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="author">Author:</label>
+                                    <input type="text" class="form-control" id="author" name="author" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="image">Image:</label>
+                                    <input type="file" id="image" name="image" required>
+                                </div>
+                                <img id="preview_image" src="" alt="Book Image" style="max-width: 200px; max-height: 200px;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-primary">Add Book</button>
+                            </form>
+                        </div>
+                 
+                    </div>
+                </div>
+          
+            </section>
+    
+        </div>
+   
     </div>
-    <!-- /.content-wrapper -->
-</div>
-<!-- ./wrapper -->
 
-<!-- AdminLTE Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
 
-<script>
-    document.getElementById('addBookForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        
-        var formData = new FormData(this);
-        var csrfToken = document.querySelector('input[name="csrf_token"]').value;
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
 
-        fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': csrfToken
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Book added successfully.'); // Оповещение об успешном добавлении книги
-                window.location.href = "{{ url_for('index') }}"; // Перенаправление на страницу с книгами
-            } else {
-                alert('Error adding book. Please try again.'); // Оповещение об ошибке при добавлении книги
-            }
-        })
-        .catch(error => {
-            console.error('Error adding book:', error);
+    <script>
+        document.getElementById('addBookForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+            var csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Book added successfully.'); 
+                        window.location.href = "{{ url_for('index') }}"; 
+                    } else {
+                        alert('Error adding book. Please try again.'); 
+                    }
+                })
+                .catch(error => {
+                    console.error('Error adding book:', error);
+                });
         });
-    });
-</script>
+
+        document.getElementById('image').addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('preview_image').src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </body>
+
 </html>

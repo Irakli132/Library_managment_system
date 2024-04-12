@@ -1,22 +1,28 @@
+import os
 from flask import Flask, jsonify, render_template, redirect, url_for, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_wtf.csrf import generate_csrf, CSRFProtect
 from flask_bcrypt import Bcrypt
 from functools import wraps
+from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
 
 db = SQLAlchemy(app)
-app.secret_key = b'_53oi3uriq9pifpff;apl'
 csrf = CSRFProtect(app)
 bcrypt = Bcrypt(app)
 
-
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -32,6 +38,18 @@ class Users(db.Model):
 
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
+    
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_image(file):
+    if file:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        return filename
+    return None
 
 class Books(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -44,7 +62,6 @@ class Books(db.Model):
 
     def serialize(self):
         return {"id": self.id, "username": self.title, "role": self.author}
-
 
 def not_user_auth(f):
     @wraps(f)
@@ -90,7 +107,7 @@ def is_librarian(f):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user_id' in session:
-        return redirect(url_for('index'))  # Редирект если пользователь уже вошел в систему
+        return redirect(url_for('index'))
 
     if request.method == 'POST':
         username = request.form['username']
@@ -114,6 +131,19 @@ def index():
         
         user_id = session['user_id']
         
+        admin_count = Users.query.filter_by(role='admin').count()
+        
+        # If there are no admin users, create one
+        if admin_count == 0:
+            admin_username = 'admin'
+            admin_password = 'admin'  
+            admin_role = 'admin'
+            admin_user = Users(username=admin_username, role=admin_role)
+            admin_user.set_password(admin_password)
+            db.session.add(admin_user)
+            db.session.commit()
+            flash("No admin user found. New admin user created.", "success")
+
         users = Users.query.all()
         books = Books.query.all()
         
@@ -177,29 +207,51 @@ def delete_user(user_id):
         db.session.commit()
         flash('User deleted successfully.', 'success')
         session.clear()
-        if not Users.query.filter(Users.username != 'admin').first():
-            
-            admin_user = Users(username='admin', password='admin', role='admin')
-            db.session.add(admin_user)
-            db.session.commit()
-            flash('Admin user created.', 'success')
         return redirect(url_for('create_user'))
     else:
         return redirect(url_for('login'))
+    
+@app.route('/delete_admin_or_librarian/<int:user_id>', methods=['POST'])
+@is_admin
+def delete_admin_or_librarian(user_id):
+    user = Users.query.get_or_404(user_id)
+    if user.role in ["admin", "librarian"]:
+        db.session.delete(user)
+        db.session.commit()
+        flash('Admin or librarian deleted successfully.', 'success')
+    else:
+        flash('Only admins can delete other admins and librarians.', 'danger')
+    return redirect(url_for('create_user'))
 
-
+#BOOKS
 @app.route('/add_book', methods=['GET', 'POST'])
 @is_librarian
 def add_book():
     if 'user_id' in session:
         if request.method == 'POST':
-            title = request.form['title']
-            author = request.form['author']
-            new_book = Books(title=title, author=author)
-            db.session.add(new_book)
-            db.session.commit()
-            flash('Book added successfully.', 'success')
-            return redirect(url_for('index'))
+            if 'title' in request.form and 'author' in request.form:
+                title = request.form['title']
+                author = request.form['author']
+
+                if 'image' in request.files:
+                    image_file = request.files['image']
+                    if image_file and allowed_file(image_file.filename):
+                        image_path = save_image(image_file)
+                        if image_path:
+                            new_book = Books(title=title, author=author, image=image_path)
+                        else:
+                            new_book = Books(title=title, author=author)
+                    else:
+                        new_book = Books(title=title, author=author)
+                else:
+                    new_book = Books(title=title, author=author)
+
+                db.session.add(new_book)
+                db.session.commit()
+                flash('Book added successfully.', 'success')
+                return redirect(url_for('index'))
+            else:
+                flash('Title or author not provided.', 'danger')
         return render_template('add_book.html')
     else:
         return redirect(url_for('login'))
@@ -213,6 +265,14 @@ def edit_book(book_id):
             if 'title' in request.form and 'author' in request.form:
                 new_title = request.form['title']
                 new_author = request.form['author']
+
+                if 'image' in request.files:
+                    image_file = request.files['image']
+                    if image_file and allowed_file(image_file.filename):
+                        image_path = save_image(image_file)
+                        if image_path:
+                            book.image = image_path
+
                 book.title = new_title
                 book.author = new_author
                 db.session.commit()
@@ -223,7 +283,6 @@ def edit_book(book_id):
         return render_template('edit_book.html', book=book)
     else:
         return redirect(url_for('login'))
-
 
 @app.route('/delete_book/<int:book_id>', methods=['POST'])
 @is_librarian
