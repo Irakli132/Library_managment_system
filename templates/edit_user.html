@@ -38,24 +38,25 @@
                         data-accordion="false">
                         <li class="nav-item">
                             <a href="{{ url_for('index') }}" class="nav-link">
-                                <i class="nav-icon fas fa-book"></i>
-                                <p>Books | {{ session['username'] }}</p>
+                              <i class="nav-icon fas fa-book"></i>
+                              <p>Books | {{ session['username'] }}</p>
                             </a>
-                        </li>
-                        {% if 'user_id' in session %}
-                        {% if session['role'] == 'admin' %}
-                        <li class="nav-item">
+                          </li>
+                          {% if 'user_id' in session %} {% if session['role'] == 'librarian' %}
+                          <li class="nav-item">
                             <a href="{{ url_for('add_book') }}" class="nav-link">
-                                <i class="nav-icon fas fa-plus"></i>
-                                <p>Add Book</p>
+                              <i class="nav-icon fas fa-plus"></i>
+                              <p>Add Book</p>
                             </a>
-                        </li>
-                        <li class="nav-item">
+                          </li>
+                          {% endif %}
+                          {% if session['role'] == 'admin' or session['role'] == 'librarian' %}
+                          <li class="nav-item">
                             <a href="{{ url_for('create_user') }}" class="nav-link">
-                                <i class="nav-icon fas fa-user-plus"></i>
-                                <p>Add User</p>
+                              <i class="nav-icon fas fa-user-plus"></i>
+                              <p>Add User</p>
                             </a>
-                        </li>
+                          </li>
                         {% endif %}
                         {% endif %}
                     </ul>
