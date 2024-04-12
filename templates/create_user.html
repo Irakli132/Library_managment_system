@@ -70,22 +70,22 @@
                                 <p>Books | {{ session['username'] }}</p>
                             </a>
                         </li>
-                        {% if 'user_id' in session %}
-                        {% if session['role'] == 'admin' %}
+                        {% if 'user_id' in session %} {% if session['role'] == 'librarian' %}
                         <li class="nav-item">
                             <a href="{{ url_for('add_book') }}" class="nav-link">
                                 <i class="nav-icon fas fa-plus"></i>
                                 <p>Add Book</p>
                             </a>
                         </li>
+                        {% endif %}
+                        {% if session['role'] == 'admin' or session['role'] == 'librarian' %}
                         <li class="nav-item">
                             <a href="{{ url_for('create_user') }}" class="nav-link">
                                 <i class="nav-icon fas fa-user-plus"></i>
                                 <p>Add User</p>
                             </a>
                         </li>
-                        {% endif %}
-                        {% endif %}
+                        {% endif %} {% endif %}
                     </ul>
                 </nav>
             </div>
@@ -111,13 +111,22 @@
                                     <label for="password">Password:</label>
                                     <input type="password" class="form-control" id="password" name="password" required>
                                 </div>
+                                {% if session['role'] == 'admin' %}
                                 <div class="form-group">
                                     <label for="role">Role:</label>
                                     <select class="form-control" id="role" name="role">
-                                        <option value="admin">Admin</option>
+                                        <option value="librarian">Librarian</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                {% if session['role'] == 'librarian' %}
+                                <div class="form-group">
+                                    <label for="role">Role:</label>
+                                    <select class="form-control" id="role" name="role">
                                         <option value="user">User</option>
                                     </select>
                                 </div>
+                                {% endif %}
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-primary">Create User</button>
                             </form>
@@ -127,7 +136,6 @@
                                 <thead>
                                     <tr>
                                         <th>Username</th>
-                                        <th>Password</th>
                                         <th>Role</th>
                                         <th>Action</th>
                                     </tr>
@@ -136,10 +144,10 @@
                                     {% for user in users %}
                                     <tr>
                                         <td>{{ user.username }}</td>
-                                        <td>{{ user.password }}</td>
                                         <td>{{ user.role }}</td>
                                         <td class="action-cell">
                                             <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                             </form>
                                             <a href="{{ url_for('edit_user', user_id=user.id) }}"
@@ -152,13 +160,9 @@
                         </div>
                     </div>
                 </div>
-
             </section>
-
         </div>
-
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
 </body>
 

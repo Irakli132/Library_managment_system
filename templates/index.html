@@ -37,6 +37,10 @@
     flex-wrap: wrap;
   }
 
+  .show_info {
+    color: white;
+    background-color: green;
+}
   
   .delete-button {
     flex: 1 0 auto; 
@@ -90,13 +94,15 @@
                 <p>Books | {{ session['username'] }}</p>
               </a>
             </li>
-            {% if 'user_id' in session %} {% if session['role'] == 'admin' %}
+            {% if 'user_id' in session %} {% if session['role'] == 'librarian' %}
             <li class="nav-item">
               <a href="{{ url_for('add_book') }}" class="nav-link">
                 <i class="nav-icon fas fa-plus"></i>
                 <p>Add Book</p>
               </a>
             </li>
+            {% endif %}
+            {% if session['role'] == 'admin' or session['role'] == 'librarian' %}
             <li class="nav-item">
               <a href="{{ url_for('create_user') }}" class="nav-link">
                 <i class="nav-icon fas fa-user-plus"></i>
@@ -128,7 +134,6 @@
                     <div class="col-md-12">
                       <div
                         class="alert alert-dismissible {% if 'success' in messages %}alert-success{% elif 'warning' in messages %}alert-warning{% elif 'danger' in messages %}alert-danger{% endif %}">
-                        <button type="button" class="close" data-dismiss="alert">×</button>
                         <ul>
                           {% for message in messages %}
                           <li>{{ message }}</li>
@@ -160,14 +165,14 @@
                         <td>{{ book.rented_by if book.rented_by else '-' }}</td>
                         <td>
                           {% if book.rented %}
-                          {% if session['role'] == 'admin' %}
+                          {% if session['role'] == 'librarian' %}
                           <form method="POST" action="{{ url_for('return_book', book_id=book.id) }}">
                             <button type="submit" class="btn btn-danger">Return</button>
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                           </form>
                           {% endif %}
                           {% else %}
-                          {% if session['role'] == 'admin' %}
+                          {% if session['role'] == 'librarian' %}
                           <form method="POST" action="{{ url_for('assign_book', book_id=book.id) }}">
                             <div class="form-group">
                               <label for="search_user_{{ book.id }}">Search User:</label>
@@ -185,7 +190,7 @@
                           {% endif %}
                         </td>
                         <td class="action-cell">
-                          {% if session['role'] == 'admin' %}
+                          {% if session['role'] == 'librarian' %}
                           <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                             <button type="submit" class="btn btn-sm btn-danger" style="margin-right: 5px;">Delete</button>
@@ -193,6 +198,10 @@
                           <form method="POST" action="{{ url_for('edit_book', book_id=book.id) }}">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                             <button type="submit" class="btn btn-sm btn-primary">Edit</button>
+                          </form>
+                          <form method="GET" action="{{ url_for('show_info', book_id=book.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            <button type="submit" class="btn btn-sm show_info">Show</button>
                           </form>
                           {% endif %}
                         </td>
